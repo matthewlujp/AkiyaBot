@@ -2,24 +2,43 @@ package main
 
 import (
 	"io"
+	"io/ioutil"
 	"log"
 	"net"
 	"os"
 	"time"
 
+	"github.com/BurntSushi/toml"
 	"golang.org/x/crypto/ssh"
 )
 
+const configFile = "./conf.toml"
+
+type config struct {
+	RelayHostName  string
+	RelayUserName  string
+	ForwardPort    int
+	PrivateKeyPath string
+}
+
 var (
-	interUsername  = "ishige"
-	interHost      = "akiyagri.akg.t.u-tokyo.ac.jp"
-	forwardPort    = 3030
-	privateKeyFile = "/Users/luning/.ssh/akiya_pc"
-	retryInterval  = 5 * time.Second
-	logger         = log.New(os.Stdout, "", 0)
+	cnf           config
+	retryInterval = 5 * time.Second
+	logger        = log.New(os.Stdout, "", 0)
 )
 
 func init() {
+	bs, _ := ioutil.ReadFile(configFile)
+	logger.Print(string(bs))
+
+	if _, err := toml.DecodeFile(configFile, &cnf); err != nil {
+		log.Fatalf("error while parsing conf toml: %s", err)
+	}
+	logger.Println("")
+	logger.Printf("host: %s", cnf.RelayHostName)
+	logger.Printf("user: %s ", cnf.RelayUserName)
+	logger.Printf("port: %d", cnf.ForwardPort)
+	logger.Printf("private key: %s", cnf.PrivateKeyPath)
 }
 
 func handleClient(client, remote net.Conn) {
@@ -44,19 +63,19 @@ func handleClient(client, remote net.Conn) {
 }
 
 func main() {
-	auth, err := publicKeyFile(privateKeyFile)
+	auth, err := publicKeyFile(cnf.PrivateKeyPath)
 	if err != nil {
 		log.Fatalf("error processing private key: %s", err)
 	}
-	log.Printf("private key file %s read successfully", privateKeyFile)
+	log.Printf("private key file %s read successfully", cnf.PrivateKeyPath)
 
 	interEndpoint := &endpoint{ // Endpoint for reverse ssh
-		host: interHost,
+		host: cnf.RelayHostName,
 		port: 22,
 	}
 	forwardEndpoint := &endpoint{
 		host: "localhost",
-		port: forwardPort,
+		port: cnf.ForwardPort,
 	}
 	localEndpoint := &endpoint{
 		host: "localhost",
@@ -64,7 +83,7 @@ func main() {
 	}
 
 	sshConfig := &ssh.ClientConfig{
-		User:            interUsername,
+		User:            cnf.RelayUserName,
 		Auth:            []ssh.AuthMethod{auth},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
