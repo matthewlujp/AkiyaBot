@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"io"
 	"log"
 	"net"
@@ -24,16 +25,21 @@ var (
 	cnf           config
 	retryInterval = 5 * time.Second
 	logger        = log.New(os.Stdout, "", 0)
+	forwardPort   *int
 )
 
 func init() {
 	if _, err := toml.DecodeFile(configFile, &cnf); err != nil {
 		log.Fatalf("error while parsing conf toml: %s", err)
 	}
+
+	forwardPort = flag.Int("p", cnf.ForwardPort, "port number for forwarding")
+	flag.Parse()
+
 	logger.Println("")
 	logger.Printf("host: %s", cnf.RelayHostName)
 	logger.Printf("user: %s ", cnf.RelayUserName)
-	logger.Printf("port: %d", cnf.ForwardPort)
+	logger.Printf("port: %d", *forwardPort)
 	logger.Printf("private key: %s", cnf.PrivateKeyPath)
 }
 
@@ -71,7 +77,7 @@ func main() {
 	}
 	forwardEndpoint := &endpoint{
 		host: "localhost",
-		port: cnf.ForwardPort,
+		port: *forwardPort,
 	}
 	localEndpoint := &endpoint{
 		host: "localhost",
