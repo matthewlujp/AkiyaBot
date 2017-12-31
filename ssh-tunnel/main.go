@@ -2,7 +2,6 @@ package main
 
 import (
 	"io"
-	"io/ioutil"
 	"log"
 	"net"
 	"os"
@@ -28,9 +27,6 @@ var (
 )
 
 func init() {
-	bs, _ := ioutil.ReadFile(configFile)
-	logger.Print(string(bs))
-
 	if _, err := toml.DecodeFile(configFile, &cnf); err != nil {
 		log.Fatalf("error while parsing conf toml: %s", err)
 	}
