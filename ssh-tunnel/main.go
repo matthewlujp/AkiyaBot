@@ -64,20 +64,20 @@ func init() {
 
 func handleClient(client, remote net.Conn) {
 	defer client.Close()
-	done := make(chan struct{})
+	done := make(chan bool)
 
 	go func() {
 		if _, err := io.Copy(client, remote); err != nil {
 			logger.Printf("error while copy remote -> local: %s", err)
 		}
-		close(done)
+		done <- true
 	}()
 
 	go func() {
 		if _, err := io.Copy(remote, client); err != nil {
 			logger.Printf("error while copy local -> remote: %s", err)
 		}
-		close(done)
+		done <- true
 	}()
 
 	<-done
@@ -120,7 +120,6 @@ func connect(sshConfig *ssh.ClientConfig, quit chan<- struct{}) {
 
 		handleClient(client, local)
 	}
-
 }
 
 func main() {
