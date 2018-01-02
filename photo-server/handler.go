@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"image/jpeg"
 	"io/ioutil"
 	"net/http"
 	"regexp"
@@ -65,6 +67,10 @@ func imgRequestHandler() echo.HandlerFunc {
 			return c.String(http.StatusInternalServerError, fmt.Sprintf("%s failed to get a frame", cameraFile))
 		}
 
-		return c.Blob(http.StatusOK, "image/jpeg", frame)
+		buf := new(bytes.Buffer)
+		if err := jpeg.Encode(buf, frame, nil); err != nil {
+			return c.String(http.StatusInternalServerError, "failed to convert a frame into jpeg")
+		}
+		return c.Blob(http.StatusOK, "image/jpeg", buf.Bytes())
 	}
 }
