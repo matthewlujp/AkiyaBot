@@ -38,8 +38,8 @@ func init() {
 		log.Fatalf("error while parsing conf toml: %s", err)
 	}
 
-	forwardPort = flag.Int("remote-port", cnf.ForwardPort, "remote port number")
-	localPort = flag.Int("local-port", cnf.LocalPort, "local port number")
+	forwardPort = flag.Int("remote_port", cnf.ForwardPort, "remote port number")
+	localPort = flag.Int("local_port", cnf.LocalPort, "local port number")
 	flag.Parse()
 
 	logger.Println("")
