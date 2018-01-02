@@ -1,4 +1,5 @@
 RelayHostName = "akiyagri.akg.t.u-tokyo.ac.jp"
 RelayUserName = "ishige"
 ForwardPort = 3030
+LocalPort = 22
 PrivateKeyPath = "/Users/luning/.ssh/akiya_pc"

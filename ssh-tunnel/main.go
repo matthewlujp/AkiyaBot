@@ -18,6 +18,7 @@ type config struct {
 	RelayHostName  string
 	RelayUserName  string
 	ForwardPort    int
+	LocalPort      int
 	PrivateKeyPath string
 }
 
@@ -26,6 +27,7 @@ var (
 	retryInterval   = 5 * time.Second
 	logger          = log.New(os.Stdout, "", 0)
 	forwardPort     *int
+	localPort       *int
 	interEndpoint   *endpoint
 	forwardEndpoint *endpoint
 	localEndpoint   *endpoint
@@ -36,7 +38,8 @@ func init() {
 		log.Fatalf("error while parsing conf toml: %s", err)
 	}
 
-	forwardPort = flag.Int("p", cnf.ForwardPort, "port number for forwarding")
+	forwardPort = flag.Int("remote-port", cnf.ForwardPort, "remote port number")
+	localPort = flag.Int("local-port", cnf.LocalPort, "local port number")
 	flag.Parse()
 
 	logger.Println("")
@@ -55,7 +58,7 @@ func init() {
 	}
 	localEndpoint = &endpoint{
 		host: "localhost",
-		port: 22,
+		port: *localPort,
 	}
 }
 
