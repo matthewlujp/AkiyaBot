@@ -1,6 +1,7 @@
 package main
 
 import (
+	"C"
 	"bytes"
 	"fmt"
 	"image/jpeg"
@@ -8,8 +9,8 @@ import (
 	"net/http"
 	"regexp"
 
-	"github.com/blackjack/webcam"
 	"github.com/labstack/echo"
+	"github.com/yuntan/go-v4l2/capture"
 )
 
 var cameraDevPattern = regexp.MustCompile("video[0-9]+")
@@ -40,35 +41,14 @@ func cameraIDRequestHandler() echo.HandlerFunc {
 func imgRequestHandler() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		cameraName := c.Param("camera_id")
-		cameraFile := fmt.Sprintf("/dev/%s", cameraName)
-		cam, err := webcam.Open(cameraFile) // Open webcam
+		cameraDeviceFile := fmt.Sprintf("/dev/%s", cameraName)
+		img, err := capture.Capture(cameraDeviceFile)
 		if err != nil {
-			return c.String(http.StatusInternalServerError, fmt.Sprintf("cannot open camera %s", cameraFile))
-		}
-		defer cam.Close()
-
-		if err := cam.StartStreaming(); err != nil {
-			return c.String(http.StatusInternalServerError, fmt.Sprintf("cannot start streaming %s", cameraFile))
-		}
-
-		// Gat frame
-		timeout := uint32(10)
-		err = cam.WaitForFrame(timeout)
-		switch err.(type) {
-		case nil:
-		case *webcam.Timeout:
-			return c.String(http.StatusInternalServerError, fmt.Sprintf("%s timeout", cameraFile))
-		default:
-			return c.String(http.StatusInternalServerError, fmt.Sprintf("%s other error while waiting for a frame", cameraFile))
-		}
-
-		frame, err := cam.ReadFrame()
-		if err != nil || len(frame) <= 0 {
-			return c.String(http.StatusInternalServerError, fmt.Sprintf("%s failed to get a frame", cameraFile))
+			return c.String(http.StatusInternalServerError, fmt.Sprintf("%s failed to get image", cameraDeviceFile))
 		}
 
 		buf := new(bytes.Buffer)
-		if err := jpeg.Encode(buf, frame, nil); err != nil {
+		if err := jpeg.Encode(buf, img, nil); err != nil {
 			return c.String(http.StatusInternalServerError, "failed to convert a frame into jpeg")
 		}
 		return c.Blob(http.StatusOK, "image/jpeg", buf.Bytes())
