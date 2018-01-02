@@ -10,8 +10,7 @@ import (
 	"github.com/labstack/echo"
 )
 
-// var cameraDevPattern = regexp.MustCompile("video[0-9]+")
-var cameraDevPattern = regexp.MustCompile("ttyr([0-9]|[abcdef]+)")
+var cameraDevPattern = regexp.MustCompile("video[0-9]+")
 
 type cameras struct {
 	IDs []string `json:"ids"`
@@ -42,12 +41,12 @@ func imgRequestHandler() echo.HandlerFunc {
 		cameraFile := fmt.Sprintf("/dev/%s", cameraName)
 		cam, err := webcam.Open(cameraFile) // Open webcam
 		if err != nil {
-			return c.String(http.StatusInternalServerError, fmt.Sprinf("cannot open camera %s", cameraFile))
+			return c.String(http.StatusInternalServerError, fmt.Sprintf("cannot open camera %s", cameraFile))
 		}
 		defer cam.Close()
 
 		if err := cam.StartStreaming(); err != nil {
-			return c.String(http.StatusInternalServerError, fmt.Sprinf("cannot start streaming %s", cameraFile))
+			return c.String(http.StatusInternalServerError, fmt.Sprintf("cannot start streaming %s", cameraFile))
 		}
 
 		// Gat frame
@@ -56,14 +55,14 @@ func imgRequestHandler() echo.HandlerFunc {
 		switch err.(type) {
 		case nil:
 		case *webcam.Timeout:
-			return c.String(http.StatusInternalServerError, fmt.Sprinf("%s timeout", cameraFile))
+			return c.String(http.StatusInternalServerError, fmt.Sprintf("%s timeout", cameraFile))
 		default:
-			return c.String(http.StatusInternalServerError, fmt.Sprinf("%s other error while waiting for a frame", cameraFile))
+			return c.String(http.StatusInternalServerError, fmt.Sprintf("%s other error while waiting for a frame", cameraFile))
 		}
 
 		frame, err := cam.ReadFrame()
 		if err != nil || len(frame) <= 0 {
-			return c.String(http.StatusInternalServerError, fmt.Sprinf("%s failed to get a frame", cameraFile))
+			return c.String(http.StatusInternalServerError, fmt.Sprintf("%s failed to get a frame", cameraFile))
 		}
 
 		return c.Blob(http.StatusOK, "image/jpeg", frame)
