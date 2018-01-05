@@ -74,7 +74,7 @@ func main() {
 	slackListener := &slackListener{
 		client:    client,
 		botID:     cnf.Bot.ClientID,
-		channelID: "hoge",
+		channelID: "test",
 	}
 
 	slackListener.listenAndResponse()
