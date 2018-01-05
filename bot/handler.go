@@ -98,7 +98,7 @@ func (s *slackListener) handleMessageEvent(rtm *slack.RTM, ev *slack.MessageEven
 	if strings.Contains(ev.Text, "野菜の様子") {
 		rtm.SendMessage(rtm.NewOutgoingMessage("野菜の写真を撮ります。", ev.Channel))
 
-		baseName := time.Now().Format("2006-01-02_15:04:05")
+		baseName := time.Now().Format("2006-01-02_15-04-05")
 		dirPath := path.Join(cnf.PhotoService.SaveDir, baseName)
 		fileNames, err := getPhotos(dirPath)
 		if err != nil {
