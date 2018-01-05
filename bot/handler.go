@@ -68,7 +68,10 @@ func getPhotos(saveDirPath string) ([]string, error) {
 		if err = os.Mkdir(saveDirPath, 777); err != nil && err != os.ErrExist {
 			return nil, err
 		}
-		f, err := os.OpenFile(path.Join(saveDirPath, fmt.Sprintf("%s.jpg", lookupCameraDeviceName(cam))), os.O_RDWR|os.O_CREATE, 777)
+		f, err := os.OpenFile(
+			path.Join(saveDirPath, fmt.Sprintf("%s.jpg", lookupCameraDeviceName(cam))),
+			os.O_RDWR|os.O_CREATE, 0777,
+		)
 		if err != nil {
 			logger.Print(err)
 			return nil, err
