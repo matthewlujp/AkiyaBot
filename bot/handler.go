@@ -136,3 +136,19 @@ func (s *slackListener) handleMessageEvent(rtm *slack.RTM, ev *slack.MessageEven
 
 	return nil
 }
+
+func (s *slackListener) listenAndResponse() {
+	// Start listening slack events
+	rtm := s.client.NewRTM()
+	go rtm.ManageConnection()
+
+	// Handle slack events
+	for msg := range rtm.IncomingEvents {
+		switch ev := msg.Data.(type) {
+		case *slack.MessageEvent:
+			if err := s.handleMessageEvent(rtm, ev); err != nil {
+				logger.Printf("[ERROR] Failed to handle message: %s", err)
+			}
+		}
+	}
+}
