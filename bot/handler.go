@@ -68,15 +68,18 @@ func getPhotos(saveDirPath string) ([]string, error) {
 		if err = os.Mkdir(saveDirPath, 777); err != nil && err != os.ErrExist {
 			return nil, err
 		}
-		f, err := os.OpenFile(path.Join(saveDirPath, lookupCameraDeviceName(cam), ".jpg"), os.O_RDWR|os.O_CREATE, 777)
+		f, err := os.OpenFile(path.Join(saveDirPath, fmt.Sprintf("%s.jpg", lookupCameraDeviceName(cam))), os.O_RDWR|os.O_CREATE, 777)
 		if err != nil {
+			logger.Print(err)
 			return nil, err
 		}
 		w := bufio.NewWriter(f)
 		if _, err := io.Copy(w, res.Body); err != nil {
+			logger.Print(err)
 			return nil, err
 		}
 		if err := f.Close(); err != nil {
+			logger.Print(err)
 			return nil, err
 		}
 
