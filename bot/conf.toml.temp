@@ -1,8 +1,8 @@
 [Bot]
 BotName = "akiya-farmer"
-ClientID = "204715524448.289927664977"
-BotUserOAuthAccessToken = "xoxb-290449729506-L5ILxtWCEvVpqoa6FGY9qun7"
+ClientID = ""
+BotUserOAuthAccessToken = ""
 
 [PhotoService]
-URL = "http://localhost:4050"
-SaveDir = "/home/matthew/akiya-data"
+URL = ""
+SaveDir = ""
