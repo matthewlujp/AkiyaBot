@@ -65,7 +65,7 @@ func getPhotos(saveDirPath string) ([]string, error) {
 			return nil, fmt.Errorf("photo request status: %d", err)
 		}
 
-		if err = os.Mkdir(saveDirPath, 777); err != nil && err != os.ErrExist {
+		if err = os.Mkdir(saveDirPath, 0777); err != nil && err != os.ErrExist {
 			return nil, err
 		}
 		f, err := os.OpenFile(
