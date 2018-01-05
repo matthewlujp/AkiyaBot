@@ -60,6 +60,5 @@ func main() {
 		botID:     cnf.Bot.ClientID,
 		channelID: "test",
 	}
-
 	slackListener.listenAndResponse()
 }
