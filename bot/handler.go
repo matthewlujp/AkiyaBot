@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -96,10 +97,12 @@ func (s *slackListener) handleMessageEvent(rtm *slack.RTM, ev *slack.MessageEven
 		fileNames, err := getPhotos(dirPath)
 		if err != nil {
 			rtm.SendMessage(rtm.NewOutgoingMessage(fmt.Sprintf("while getting photos: %s", err), ev.Channel))
+			return err
 		}
 
 		if len(fileNames) <= 0 {
 			rtm.SendMessage(rtm.NewOutgoingMessage("写真が取れなかったよ、、、", ev.Channel))
+			return errors.New("no photos obtained")
 		}
 
 		for _, fileName := range fileNames {
