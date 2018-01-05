@@ -92,38 +92,45 @@ func getPhotos(saveDirPath string) ([]string, error) {
 	return photoFilePaths, nil
 }
 
+func photoUploader(msgChannel string, rtm *slack.RTM, client *slack.Client) error {
+	baseName := time.Now().Format("2006-01-02_15-04-05")
+	dirPath := path.Join(cnf.PhotoService.SaveDir, baseName)
+	fileNames, err := getPhotos(dirPath)
+	if err != nil {
+		rtm.SendMessage(rtm.NewOutgoingMessage(fmt.Sprintf("while getting photos: %s", err), msgChannel))
+		return err
+	}
+
+	if len(fileNames) <= 0 {
+		rtm.SendMessage(rtm.NewOutgoingMessage("写真が取れなかったよ、、、", msgChannel))
+		return errors.New("no photos obtained")
+	}
+
+	for _, fileName := range fileNames {
+		_, err = client.UploadFile(slack.FileUploadParameters{
+			File:           fileName,
+			Filetype:       "jpeg",
+			Filename:       path.Base(fileName),
+			Title:          "foo",
+			InitialComment: "bar",
+			Channels:       []string{msgChannel},
+		})
+		if err != nil {
+			logger.Print(err)
+			continue
+		}
+	}
+
+	return nil
+}
+
 func (s *slackListener) handleMessageEvent(rtm *slack.RTM, ev *slack.MessageEvent) error {
 	logger.Printf("MESSAGE EVENT %s:%s \"%s\"", ev.Channel, ev.User, ev.Text)
 
 	if strings.Contains(ev.Text, "野菜の様子") {
 		rtm.SendMessage(rtm.NewOutgoingMessage("野菜の写真を撮ります。", ev.Channel))
-
-		baseName := time.Now().Format("2006-01-02_15-04-05")
-		dirPath := path.Join(cnf.PhotoService.SaveDir, baseName)
-		fileNames, err := getPhotos(dirPath)
-		if err != nil {
-			rtm.SendMessage(rtm.NewOutgoingMessage(fmt.Sprintf("while getting photos: %s", err), ev.Channel))
+		if err := photoUploader(ev.Channel, rtm, s.client); err != nil {
 			return err
-		}
-
-		if len(fileNames) <= 0 {
-			rtm.SendMessage(rtm.NewOutgoingMessage("写真が取れなかったよ、、、", ev.Channel))
-			return errors.New("no photos obtained")
-		}
-
-		for _, fileName := range fileNames {
-			_, err = s.client.UploadFile(slack.FileUploadParameters{
-				File:           fileName,
-				Filetype:       "jpeg",
-				Filename:       path.Base(fileName),
-				Title:          "foo",
-				InitialComment: "bar",
-				Channels:       []string{"test"},
-			})
-			if err != nil {
-				logger.Print(err)
-				continue
-			}
 		}
 	}
 
