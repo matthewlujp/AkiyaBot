@@ -15,10 +15,6 @@ import (
 
 var cameraDevPattern = regexp.MustCompile("video[0-9]+")
 
-type cameras struct {
-	IDs []string `json:"ids"`
-}
-
 func cameraIDRequestHandler() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		devices, err := ioutil.ReadDir("/dev")
@@ -34,7 +30,7 @@ func cameraIDRequestHandler() echo.HandlerFunc {
 			}
 		}
 
-		return c.JSON(http.StatusOK, cameras{IDs: cameraIDs})
+		return c.JSON(http.StatusOK, Cameras{IDs: cameraIDs})
 	}
 }
 
