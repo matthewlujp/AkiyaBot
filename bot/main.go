@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/BurntSushi/toml"
+	"github.com/matthewlujp/AkiyaBot/bot/gdrive"
 	"github.com/nlopes/slack"
 )
 
@@ -17,6 +18,7 @@ const (
 type Conf struct {
 	Bot          BotConf
 	PhotoService PhotoServiceConf
+	GDriveAPI    GDriveAPIConf
 }
 
 // BotConf config related to bot
@@ -32,6 +34,11 @@ type PhotoServiceConf struct {
 	SaveDir string
 }
 
+// GDriveAPIConf config related to google drive upload
+type GDriveAPIConf struct {
+	ClientSecretPath string
+}
+
 type slackListener struct {
 	client    *slack.Client
 	botID     string
@@ -42,6 +49,8 @@ var (
 	cnf             Conf
 	logger          = log.New(os.Stdout, "", log.Lshortfile)
 	photoServiceURL *string
+	gService        *gdrive.APIService
+	apiErr          error
 )
 
 func init() {
@@ -51,6 +60,11 @@ func init() {
 
 	photoServiceURL = flag.String("photo_url", cnf.PhotoService.URL, "port number for forwarding")
 	flag.Parse()
+
+	gService, apiErr = gdrive.GetAPIService(cnf.GDriveAPI.ClientSecretPath)
+	if apiErr != nil {
+		logger.Fatalf("failed to obtain gdrive api service %s", apiErr)
+	}
 }
 
 func main() {
@@ -60,5 +74,5 @@ func main() {
 		botID:     cnf.Bot.ClientID,
 		channelID: "test",
 	}
-	slackListener.listenAndResponse()
+	slackListener.listenAndResponse(gService)
 }

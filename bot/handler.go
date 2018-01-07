@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/matthewlujp/AkiyaBot/bot/gdrive"
 	"github.com/matthewlujp/AkiyaBot/photo-server/camera"
 	"github.com/nlopes/slack"
 )
@@ -92,8 +93,9 @@ func getPhotos(saveDirPath string) ([]string, error) {
 	return photoFilePaths, nil
 }
 
-func photoUploader(msgChannel string, rtm *slack.RTM, client *slack.Client) error {
-	baseName := time.Now().Format("2006-01-02_15-04-05")
+func photoUploader(msgChannel string, rtm *slack.RTM, client *slack.Client, gService *gdrive.APIService) error {
+	now := time.Now()
+	baseName := now.Format("2006-01-02_15-04-05")
 	dirPath := path.Join(cnf.PhotoService.SaveDir, baseName)
 	fileNames, err := getPhotos(dirPath)
 	if err != nil {
@@ -119,17 +121,34 @@ func photoUploader(msgChannel string, rtm *slack.RTM, client *slack.Client) erro
 			logger.Print(err)
 			continue
 		}
+
+		f, err := os.Open(fileName)
+		if err != nil {
+			logger.Print(err)
+			continue
+		}
+		year, month, day := now.Date()
+		err = gService.Upload(&gdrive.UploadFileInfo{
+			Datetime: now,
+			Title:    fileName,
+			File:     f,
+			Path:     []string{string(year), string(month), string(day), string(now.Hour())},
+		})
+		if err != nil {
+			logger.Print(err)
+			continue
+		}
 	}
 
 	return nil
 }
 
-func (s *slackListener) handleMessageEvent(rtm *slack.RTM, ev *slack.MessageEvent) error {
+func (s *slackListener) handleMessageEvent(rtm *slack.RTM, ev *slack.MessageEvent, gService *gdrive.APIService) error {
 	logger.Printf("MESSAGE EVENT %s:%s \"%s\"", ev.Channel, ev.User, ev.Text)
 
 	if strings.Contains(ev.Text, "野菜の様子") {
 		rtm.SendMessage(rtm.NewOutgoingMessage("野菜の写真を撮ります。", ev.Channel))
-		if err := photoUploader(ev.Channel, rtm, s.client); err != nil {
+		if err := photoUploader(ev.Channel, rtm, s.client, gService); err != nil {
 			return err
 		}
 	}
@@ -137,7 +156,7 @@ func (s *slackListener) handleMessageEvent(rtm *slack.RTM, ev *slack.MessageEven
 	return nil
 }
 
-func (s *slackListener) listenAndResponse() {
+func (s *slackListener) listenAndResponse(gService *gdrive.APIService) {
 	// Start listening slack events
 	rtm := s.client.NewRTM()
 	go rtm.ManageConnection()
@@ -146,7 +165,7 @@ func (s *slackListener) listenAndResponse() {
 	for msg := range rtm.IncomingEvents {
 		switch ev := msg.Data.(type) {
 		case *slack.MessageEvent:
-			if err := s.handleMessageEvent(rtm, ev); err != nil {
+			if err := s.handleMessageEvent(rtm, ev, gService); err != nil {
 				logger.Printf("[ERROR] Failed to handle message: %s", err)
 			}
 		}
