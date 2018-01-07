@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 
@@ -132,7 +133,7 @@ func photoUploader(msgChannel string, rtm *slack.RTM, client *slack.Client, gSer
 			Datetime: now,
 			Title:    fileName,
 			File:     f,
-			Path:     []string{"YasaiLog", string(year), string(month), string(day), string(now.Hour())},
+			Path:     []string{"YasaiLog", strconv.Itoa(year), strconv.Itoa(int(month)), strconv.Itoa(day), strconv.Itoa(now.Hour())},
 		})
 		if err != nil {
 			logger.Print(err)

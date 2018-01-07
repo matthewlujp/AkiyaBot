@@ -78,6 +78,7 @@ PATH_SEARCH:
 	for _, folderName := range path {
 		entities, err := gService.listFolder(parentFolder.Id)
 		if err != nil {
+			logger.Print(err)
 			return nil, err
 		}
 		for _, e := range entities {
@@ -88,6 +89,7 @@ PATH_SEARCH:
 			}
 		}
 		// target folderName not exists
+		logger.Printf("folder %s not found. create", folderName)
 		newFolder, err := gService.createFolder(folderName, parentFolder.Id)
 		if err != nil {
 			logger.Print(err)
