@@ -114,7 +114,6 @@ func (gService *APIService) listFolder(parentID string) ([]*drive.File, error) {
 	if parentID != "" {
 		query += fmt.Sprintf(" and '%s' in parents", parentID)
 	}
-	logger.Printf("query folder list: %s", query)
 
 	list, err := gService.Files.List().Q(query).Fields("files(id, name)").Do()
 	if err != nil {
