@@ -26,7 +26,7 @@ func getCameras() ([]string, error) {
 		return nil, err
 	}
 	defer res.Body.Close()
-	if res.StatusCode != 200 {
+	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("camera request status: %s", res.Status)
 	}
 
@@ -63,7 +63,7 @@ func getPhotos(saveDirPath string) ([]string, error) {
 			return nil, err
 		}
 		defer res.Body.Close()
-		if res.StatusCode != 200 {
+		if res.StatusCode != http.StatusOK {
 			return nil, fmt.Errorf("photo response status: %d", res.StatusCode)
 		}
 
