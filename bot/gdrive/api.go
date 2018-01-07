@@ -112,7 +112,7 @@ func (gService *APIService) createFolder(name, parentID string) (*drive.File, er
 func (gService *APIService) listFolder(parentID string) ([]*drive.File, error) {
 	query := fmt.Sprintf("not trashed and mimeType = '%s'", folderMime)
 	if parentID != "" {
-		query += fmt.Sprintf("'%s' in parents", parentID)
+		query += fmt.Sprintf(" and '%s' in parents", parentID)
 	}
 	logger.Printf("query folder list: %s", query)
 
