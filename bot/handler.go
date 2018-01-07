@@ -132,11 +132,11 @@ func photoUploader(msgChannel string, rtm *slack.RTM, client *slack.Client, gSer
 			Datetime: now,
 			Title:    fileName,
 			File:     f,
-			Path:     []string{string(year), string(month), string(day), string(now.Hour())},
+			Path:     []string{"YasaiLog", string(year), string(month), string(day), string(now.Hour())},
 		})
 		if err != nil {
 			logger.Print(err)
-			continue
+			return err
 		}
 	}
 
@@ -149,6 +149,7 @@ func (s *slackListener) handleMessageEvent(rtm *slack.RTM, ev *slack.MessageEven
 	if strings.Contains(ev.Text, "野菜の様子") {
 		rtm.SendMessage(rtm.NewOutgoingMessage("野菜の写真を撮ります。", ev.Channel))
 		if err := photoUploader(ev.Channel, rtm, s.client, gService); err != nil {
+			logger.Print(err)
 			return err
 		}
 	}
