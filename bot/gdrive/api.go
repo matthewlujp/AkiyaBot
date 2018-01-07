@@ -90,6 +90,7 @@ PATH_SEARCH:
 		// target folderName not exists
 		newFolder, err := gService.createFolder(folderName, parentFolder.Id)
 		if err != nil {
+			logger.Print(err)
 			return nil, err
 		}
 		parentFolder.Name = newFolder.Name
@@ -117,6 +118,7 @@ func (gService *APIService) listFolder(parentID string) ([]*drive.File, error) {
 
 	list, err := gService.Files.List().Q(query).Fields("files(id, name)").Do()
 	if err != nil {
+		logger.Print(err)
 		return nil, err
 	}
 	return list.Files, nil
