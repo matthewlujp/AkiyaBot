@@ -65,7 +65,6 @@ func (gService *APIService) Upload(upFile *UploadFileInfo) error {
 	}
 
 	f, err := gService.Files.Create(&drive.File{Name: upFile.Title, Parents: []string{folder.Id}}).Media(upFile.File).Do()
-	logger.Printf("uploaded %s", f.Name)
 	return err
 }
 
@@ -89,7 +88,6 @@ PATH_SEARCH:
 			}
 		}
 		// target folderName not exists
-		logger.Printf("folder %s not found. create", folderName)
 		newFolder, err := gService.createFolder(folderName, parentFolder.Id)
 		if err != nil {
 			logger.Print(err)

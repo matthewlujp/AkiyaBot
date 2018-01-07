@@ -64,7 +64,7 @@ func getPhotos(saveDirPath string) ([]string, error) {
 		}
 		defer res.Body.Close()
 		if res.StatusCode != 200 {
-			return nil, fmt.Errorf("photo request status: %d", err)
+			return nil, fmt.Errorf("photo response status: %d", res.StatusCode)
 		}
 
 		if err = os.Mkdir(saveDirPath, 0777); err != nil && err != os.ErrExist {
@@ -100,7 +100,7 @@ func photoUploader(msgChannel string, rtm *slack.RTM, client *slack.Client, gSer
 	dirPath := path.Join(cnf.PhotoService.SaveDir, baseName)
 	fileNames, err := getPhotos(dirPath)
 	if err != nil {
-		rtm.SendMessage(rtm.NewOutgoingMessage(fmt.Sprintf("while getting photos: %s", err), msgChannel))
+		rtm.SendMessage(rtm.NewOutgoingMessage(fmt.Sprintf("while getting photos: %v", err), msgChannel))
 		return err
 	}
 
@@ -131,9 +131,9 @@ func photoUploader(msgChannel string, rtm *slack.RTM, client *slack.Client, gSer
 		year, month, day := now.Date()
 		err = gService.Upload(&gdrive.UploadFileInfo{
 			Datetime: now,
-			Title:    fileName,
+			Title:    path.Base(fileName),
 			File:     f,
-			Path:     []string{"YasaiLog", strconv.Itoa(year), strconv.Itoa(int(month)), strconv.Itoa(day), strconv.Itoa(now.Hour())},
+			Path:     []string{"YasaiLog", strconv.Itoa(year), month.String(), fmt.Sprintf("%dth", day), strconv.Itoa(now.Hour())},
 		})
 		if err != nil {
 			logger.Print(err)
