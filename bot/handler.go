@@ -135,7 +135,7 @@ func photoUploader(msgChannel string, rtm *slack.RTM, client *slack.Client, gSer
 			File:     f,
 			Path: []string{
 				"YasaiLog", strconv.Itoa(year), month.String(), fmt.Sprintf("%dth", day),
-				fmt.Sprintf("%d:%d:%d", now.Hour(), now.Minute(), now.Second()),
+				fmt.Sprintf("%02d:%02d:%02d", now.Hour(), now.Minute(), now.Second()),
 			},
 		})
 		if err != nil {
