@@ -64,7 +64,8 @@ func (gService *APIService) Upload(upFile *UploadFileInfo) error {
 		return err
 	}
 
-	_, err = gService.Files.Create(&drive.File{Name: upFile.Title, Parents: []string{folder.Id}}).Media(upFile.File).Do()
+	f, err = gService.Files.Create(&drive.File{Name: upFile.Title, Parents: []string{folder.Id}}).Media(upFile.File).Do()
+	logger.Printf("uploaded %s", f.Name)
 	return err
 }
 
