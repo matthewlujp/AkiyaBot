@@ -55,6 +55,7 @@ var (
 	gService        *gdrive.APIService
 	apiErr          error
 	photoClient     *photoApi.Client
+	wtc             *watcher.Watcher
 )
 
 func init() {
@@ -71,6 +72,11 @@ func init() {
 	if apiErr != nil {
 		logger.Fatalf("failed to obtain gdrive api service %s", apiErr)
 	}
+
+	wtc = &watcher.Watcher{
+		ChannelsFilePath: cnf.Watcher.ChannelsFilePath,
+		WatchHour:        []int{8, 12, 16, 20},
+	}
 }
 
 func main() {
@@ -79,14 +85,10 @@ func main() {
 		botID:  cnf.Bot.ClientID,
 	}
 
-	wtc := &watcher.Watcher{
-		ChannelsFilePath: cnf.Watcher.ChannelsFilePath,
-		WatchHour:        []int{8, 12, 16, 20},
-	}
 	wtc.RunPeriodic(func(w *watcher.Watcher) {
 		channels, err := w.RegisteredChannels()
 		if err != nil {
-			logger.Printf("regular observation, get channels, %s")
+			logger.Printf("regular observation, get channels, %s", err)
 			return
 		}
 		slackListener.sendMessage(channels, "regular observation!")

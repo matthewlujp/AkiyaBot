@@ -75,9 +75,11 @@ func takePhotoAndProcess(channel string, s *slackListener) error {
 
 func watcherRegistration(text, channel string) error {
 	if strings.Contains(text, "定期観察の依頼") {
-
+		logger.Printf("register %s as a regular observation channel", channel)
+		wtc.RegisterChannel(channel)
 	} else if strings.Contains(text, "定期観察の解除") {
-
+		logger.Printf("deregister %s as a regular observation channel", channel)
+		wtc.DeregisterChannel(channel)
 	}
 	return nil
 }

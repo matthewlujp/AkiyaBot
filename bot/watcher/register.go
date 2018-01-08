@@ -64,8 +64,8 @@ func (wtc *Watcher) IsRegistered(channelID string) (bool, error) {
 	return false, nil
 }
 
-// DeregistrateChannel remove a given channel from registered channels
-func (wtc *Watcher) DeregistrateChannel(channelID string) error {
+// DeregisterChannel remove a given channel from registered channels
+func (wtc *Watcher) DeregisterChannel(channelID string) error {
 	registeredChannels, err := wtc.readChannelsFromFile()
 	if err != nil {
 		logger.Print(err)
