@@ -7,6 +7,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/matthewlujp/AkiyaBot/bot/gdrive"
+	"github.com/matthewlujp/AkiyaBot/bot/photo-api"
 	"github.com/nlopes/slack"
 )
 
@@ -51,6 +52,7 @@ var (
 	photoServiceURL *string
 	gService        *gdrive.APIService
 	apiErr          error
+	photoClient     *photoApi.Client
 )
 
 func init() {
@@ -60,6 +62,8 @@ func init() {
 
 	photoServiceURL = flag.String("photo_url", cnf.PhotoService.URL, "port number for forwarding")
 	flag.Parse()
+
+	photoClient = photoApi.GetAPIClient(*photoServiceURL)
 
 	gService, apiErr = gdrive.GetAPIService(cnf.GDriveAPI.ClientSecretPath)
 	if apiErr != nil {
@@ -74,5 +78,5 @@ func main() {
 		botID:     cnf.Bot.ClientID,
 		channelID: "test",
 	}
-	slackListener.listenAndResponse(gService)
+	slackListener.listenAndResponse()
 }

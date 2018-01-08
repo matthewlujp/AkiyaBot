@@ -19,7 +19,7 @@ const folderMime = "application/vnd.google-apps.folder"
 type UploadFileInfo struct {
 	Datetime time.Time
 	Title    string
-	File     io.Reader
+	Reader   io.Reader
 	Path     Path
 }
 
@@ -30,7 +30,7 @@ type APIService drive.Service
 type Path []string
 
 var (
-	logger = log.New(os.Stdout, "", log.Lshortfile)
+	logger = log.New(os.Stdout, "[gdrive]", log.Lshortfile)
 )
 
 // GetAPIService returns APIService instance
@@ -64,7 +64,10 @@ func (gService *APIService) Upload(upFile *UploadFileInfo) error {
 		return err
 	}
 
-	_, err = gService.Files.Create(&drive.File{Name: upFile.Title, Parents: []string{folder.Id}}).Media(upFile.File).Do()
+	_, err = gService.Files.Create(&drive.File{
+		Name:    upFile.Title,
+		Parents: []string{folder.Id},
+	}).Media(upFile.Reader).Do()
 	return err
 }
 
