@@ -11,4 +11,4 @@ SaveDir = ""
 ClientSecretPath = ""
 
 [Watcher]
-ChannlesFilePath = ""
+ChannelsFilePath = ""

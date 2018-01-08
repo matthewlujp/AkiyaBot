@@ -34,9 +34,9 @@ func (wtc *Watcher) RegisteredChannels() ([]string, error) {
 
 // RegisterChannel registers new channel
 func (wtc *Watcher) RegisterChannel(channelID string) error {
-	f, err := os.OpenFile(wtc.ChannelsFilePath, os.O_APPEND|os.O_WRONLY, 0666)
+	f, err := os.OpenFile(wtc.ChannelsFilePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
 	if err != nil {
-		logger.Print(err)
+		logger.Printf("register channel open %s, %s", wtc.ChannelsFilePath, err)
 		return err
 	}
 	defer f.Close()

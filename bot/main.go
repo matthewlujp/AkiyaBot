@@ -88,10 +88,16 @@ func main() {
 	wtc.RunPeriodic(func(w *watcher.Watcher) {
 		channels, err := w.RegisteredChannels()
 		if err != nil {
-			logger.Printf("regular observation, get channels, %s", err)
+			logger.Printf("regular observation get channels failed, %s", err)
 			return
 		}
-		slackListener.sendMessage(channels, "regular observation!")
+
+		slackListener.sendMessage(channels, "定期観察だよ")
+		for _, ch := range channels {
+			if err := takePhotoAndProcess(ch, slackListener); err != nil {
+				logger.Printf("regular observation channel %s, %s", ch, err)
+			}
+		}
 	}, 10*time.Second)
 
 	slackListener.listenAndResponse()
