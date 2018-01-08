@@ -108,7 +108,7 @@ func main() {
 			return err
 		}
 
-		slackListener.sendMessage(channels, "定期観察だよ")
+		slackListener.sendMessage(channels, "<!here> 定期観察だよ")
 		for _, ch := range channels {
 			if err := takePhotoAndProcess(ch, slackListener); err != nil {
 				logger.Printf("regular observation channel %s, %s", ch, err)

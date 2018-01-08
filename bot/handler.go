@@ -74,12 +74,14 @@ func takePhotoAndProcess(channel string, s *slackListener) error {
 	return nil
 }
 
-func watcherRegistration(text, channel string) error {
+func watcherRegistration(text, channel string, s *slackListener) error {
 	if strings.Contains(text, "定期観察の依頼") {
 		logger.Printf("register %s as a regular observation channel", channel)
+		s.sendMessage([]string{channel}, "<!here> このチャンネルに定期的に野菜の画像をアップするよ")
 		wtc.RegisterChannel(channel)
 	} else if strings.Contains(text, "定期観察の解除") {
 		logger.Printf("deregister %s as a regular observation channel", channel)
+		s.sendMessage([]string{channel}, "<!here> このチャンネルへの野菜画像のアップをやめるよ")
 		wtc.DeregisterChannel(channel)
 	}
 	return nil
@@ -88,13 +90,13 @@ func watcherRegistration(text, channel string) error {
 func handleMessageEvent(s *slackListener, rtm *slack.RTM, ev *slack.MessageEvent) error {
 	logger.Printf("MESSAGE EVENT %s:%s \"%s\"", ev.Channel, ev.User, ev.Text)
 	if isMentioned(ev.Text, cnf.Bot.BotID) && strings.Contains(ev.Text, "野菜の様子") {
-		s.sendMessage([]string{ev.Channel}, "野菜の写真を撮るよ")
+		s.sendMessage([]string{ev.Channel}, "<!here> 野菜の写真を撮るよ")
 		rtm.SendMessage(rtm.NewTypingMessage(ev.Channel))
 		if err := takePhotoAndProcess(ev.Channel, s); err != nil {
 			return err
 		}
 	} else if isMentioned(ev.Text, cnf.Bot.BotID) && strings.Contains(ev.Text, "定期観察") {
-		if err := watcherRegistration(ev.Text, ev.Channel); err != nil {
+		if err := watcherRegistration(ev.Text, ev.Channel, s); err != nil {
 			return err
 		}
 	}
