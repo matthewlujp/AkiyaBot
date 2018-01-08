@@ -78,7 +78,6 @@ func main() {
 		client: slack.New(cnf.Bot.BotUserOAuthAccessToken),
 		botID:  cnf.Bot.ClientID,
 	}
-	go slackListener.listenAndResponse()
 
 	wtc := &watcher.Watcher{
 		ChannelsFilePath: cnf.Watcher.ChannelsFilePath,
@@ -92,4 +91,6 @@ func main() {
 		}
 		slackListener.sendMessage(channels, "regular observation!")
 	}, 10*time.Second)
+
+	slackListener.listenAndResponse()
 }
