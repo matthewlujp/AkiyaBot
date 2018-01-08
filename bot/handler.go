@@ -52,6 +52,7 @@ func takePhotoAndProcess(channel string, s *slackListener) error {
 			if err != nil {
 				logger.Printf("upload %s to google drive, %s", imgFile.Name, err)
 			}
+			wg.Done()
 		}(&f)
 	}
 

@@ -31,23 +31,27 @@ func (wtc *Watcher) nextTimer() *time.Timer {
 }
 
 // Run executes a given function f according to WatchHour
-func (wtc *Watcher) Run(f func(*Watcher)) {
+func (wtc *Watcher) Run(f func(*Watcher) error) {
 	go func() {
 		for {
 			t := wtc.nextTimer()
 			<-t.C
-			f(wtc)
+			if err := f(wtc); err != nil {
+				logger.Printf("RunPeriod, %s", err)
+			}
 		}
 	}()
 }
 
 // RunPeriodic executes a given function f periodically
-func (wtc *Watcher) RunPeriodic(f func(*Watcher), period time.Duration) {
+func (wtc *Watcher) RunPeriodic(f func(*Watcher) error, period time.Duration) {
 	go func() {
 		t := time.NewTicker(period)
 		for {
 			<-t.C
-			f(wtc)
+			if err := f(wtc); err != nil {
+				logger.Printf("RunPeriod, %s", err)
+			}
 		}
 	}()
 }

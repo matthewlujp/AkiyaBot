@@ -4,7 +4,6 @@ import (
 	"flag"
 	"log"
 	"os"
-	"time"
 
 	"github.com/BurntSushi/toml"
 	"github.com/matthewlujp/AkiyaBot/bot/gdrive"
@@ -79,26 +78,44 @@ func init() {
 	}
 }
 
+func listenAndResponse(s *slackListener) {
+	// Start listening slack events
+	rtm := s.client.NewRTM()
+	go rtm.ManageConnection()
+
+	// Handle slack events
+	for msg := range rtm.IncomingEvents {
+		switch ev := msg.Data.(type) {
+		case *slack.MessageEvent:
+			if err := handleMessageEvent(s, rtm, ev); err != nil {
+				logger.Printf("[ERROR] Failed to handle message: %s", err)
+			}
+		}
+	}
+}
+
 func main() {
 	slackListener := &slackListener{
 		client: slack.New(cnf.Bot.BotUserOAuthAccessToken),
 		botID:  cnf.Bot.ClientID,
 	}
 
-	wtc.RunPeriodic(func(w *watcher.Watcher) {
+	wtc.Run(func(w *watcher.Watcher) error {
 		channels, err := w.RegisteredChannels()
 		if err != nil {
 			logger.Printf("regular observation get channels failed, %s", err)
-			return
+			return err
 		}
 
 		slackListener.sendMessage(channels, "定期観察だよ")
 		for _, ch := range channels {
 			if err := takePhotoAndProcess(ch, slackListener); err != nil {
 				logger.Printf("regular observation channel %s, %s", ch, err)
+				return err
 			}
 		}
-	}, 10*time.Second)
+		return nil
+	})
 
-	slackListener.listenAndResponse()
+	listenAndResponse(slackListener)
 }
