@@ -13,14 +13,14 @@ import (
 	"github.com/nlopes/slack"
 )
 
-func takePhotoAndProcess(channel string, sms *slackMessageSender) error {
+func takePhotoAndProcess(channel string, s *slackListener) error {
 	imageFiles, err := photoClient.GetAllPhotos()
 	if err != nil {
 		return err
 	}
 
 	if len(imageFiles) <= 0 {
-		sms.sendMessage(channel, "写真が撮れなかったよ")
+		s.sendMessage([]string{channel}, "写真が撮れなかったよ")
 		return errors.New("no photos obtained")
 	}
 
@@ -30,7 +30,7 @@ func takePhotoAndProcess(channel string, sms *slackMessageSender) error {
 	for _, f := range imageFiles {
 		wg.Add(1)
 		go func(imgFile *photoApi.ImageFile) {
-			if err = sms.attachData([]string{channel}, imgFile.Name, bytes.NewReader(imgFile.Bytes)); err != nil {
+			if err = s.attachData([]string{channel}, imgFile.Name, bytes.NewReader(imgFile.Bytes)); err != nil {
 				logger.Printf("failed to attach %s, %s", imgFile.Name, err)
 			}
 			wg.Done()
@@ -73,29 +73,13 @@ func takePhotoAndProcess(channel string, sms *slackMessageSender) error {
 	return nil
 }
 
-func (s *slackListener) handleMessageEvent(rtm *slack.RTM, ev *slack.MessageEvent) error {
+func handleMessageEvent(s *slackListener, tm *slack.RTM, ev *slack.MessageEvent) error {
 	logger.Printf("MESSAGE EVENT %s:%s \"%s\"", ev.Channel, ev.User, ev.Text)
 	if strings.Contains(ev.Text, "野菜の様子") {
-		rtm.SendMessage(rtm.NewOutgoingMessage("野菜の写真を撮ります。", ev.Channel))
-		if err := takePhotoAndProcess(ev.Channel, &slackMessageSender{rtm: rtm, client: s.client}); err != nil {
+		s.sendMessage([]string{ev.Channel}, "野菜の写真を撮るよ")
+		if err := takePhotoAndProcess(ev.Channel, s); err != nil {
 			return err
 		}
 	}
 	return nil
-}
-
-func (s *slackListener) listenAndResponse() {
-	// Start listening slack events
-	rtm := s.client.NewRTM()
-	go rtm.ManageConnection()
-
-	// Handle slack events
-	for msg := range rtm.IncomingEvents {
-		switch ev := msg.Data.(type) {
-		case *slack.MessageEvent:
-			if err := s.handleMessageEvent(rtm, ev); err != nil {
-				logger.Printf("[ERROR] Failed to handle message: %s", err)
-			}
-		}
-	}
 }

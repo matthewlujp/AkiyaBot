@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 	"os"
+	"time"
 
 	"github.com/BurntSushi/toml"
 	"github.com/matthewlujp/AkiyaBot/bot/gdrive"
@@ -40,12 +41,6 @@ type GDriveAPIConf struct {
 	ClientSecretPath string
 }
 
-type slackListener struct {
-	client    *slack.Client
-	botID     string
-	channelID string
-}
-
 var (
 	cnf             Conf
 	logger          = log.New(os.Stdout, "", log.Lshortfile)
@@ -72,11 +67,17 @@ func init() {
 }
 
 func main() {
-	client := slack.New(cnf.Bot.BotUserOAuthAccessToken)
 	slackListener := &slackListener{
-		client:    client,
-		botID:     cnf.Bot.ClientID,
-		channelID: "test",
+		client: slack.New(cnf.Bot.BotUserOAuthAccessToken),
+		botID:  cnf.Bot.ClientID,
 	}
-	slackListener.listenAndResponse()
+	go slackListener.listenAndResponse()
+
+	t := time.NewTicker(5 * time.Second)
+	for {
+		select {
+		case <-t.C:
+			slackListener.sendMessage([]string{"C8HT1A96V"}, "定期観測")
+		}
+	}
 }
