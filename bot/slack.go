@@ -20,6 +20,7 @@ func (sms *slackMessageSender) attachData(channels []string, title string, reade
 		Reader:   reader,
 		Filetype: "jpeg",
 		Title:    title,
+		Filename: title,
 		Channels: channels,
 	})
 	return err
