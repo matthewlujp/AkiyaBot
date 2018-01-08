@@ -6,3 +6,9 @@ BotUserOAuthAccessToken = ""
 [PhotoService]
 URL = ""
 SaveDir = ""
+
+[GDriveAPI]
+ClientSecretPath = ""
+
+[Watcher]
+ChannlesFilePath = ""
