@@ -73,11 +73,24 @@ func takePhotoAndProcess(channel string, s *slackListener) error {
 	return nil
 }
 
+func watcherRegistration(text, channel string) error {
+	if strings.Contains(text, "定期観察の依頼") {
+
+	} else if strings.Contains(text, "定期観察の解除") {
+
+	}
+	return nil
+}
+
 func handleMessageEvent(s *slackListener, tm *slack.RTM, ev *slack.MessageEvent) error {
 	logger.Printf("MESSAGE EVENT %s:%s \"%s\"", ev.Channel, ev.User, ev.Text)
 	if strings.Contains(ev.Text, "野菜の様子") {
 		s.sendMessage([]string{ev.Channel}, "野菜の写真を撮るよ")
 		if err := takePhotoAndProcess(ev.Channel, s); err != nil {
+			return err
+		}
+	} else if strings.Contains(ev.Text, "定期観察") {
+		if err := watcherRegistration(ev.Text, ev.Channel); err != nil {
 			return err
 		}
 	}

@@ -9,6 +9,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/matthewlujp/AkiyaBot/bot/gdrive"
 	"github.com/matthewlujp/AkiyaBot/bot/photo-api"
+	"github.com/matthewlujp/AkiyaBot/bot/watcher"
 	"github.com/nlopes/slack"
 )
 
@@ -21,6 +22,7 @@ type Conf struct {
 	Bot          BotConf
 	PhotoService PhotoServiceConf
 	GDriveAPI    GDriveAPIConf
+	Watcher      WatcherConf
 }
 
 // BotConf config related to bot
@@ -39,6 +41,11 @@ type PhotoServiceConf struct {
 // GDriveAPIConf config related to google drive upload
 type GDriveAPIConf struct {
 	ClientSecretPath string
+}
+
+// WatcherConf config related to regular observation
+type WatcherConf struct {
+	ChannelsFilePath string
 }
 
 var (
@@ -73,11 +80,16 @@ func main() {
 	}
 	go slackListener.listenAndResponse()
 
-	t := time.NewTicker(5 * time.Second)
-	for {
-		select {
-		case <-t.C:
-			slackListener.sendMessage([]string{"C8HT1A96V"}, "定期観測")
-		}
+	wtc := &watcher.Watcher{
+		ChannelsFilePath: cnf.Watcher.ChannelsFilePath,
+		WatchHour:        []int{8, 12, 16, 20},
 	}
+	wtc.RunPeriodic(func(w *watcher.Watcher) {
+		channels, err := w.RegisteredChannels()
+		if err != nil {
+			logger.Printf("regular observation, get channels, %s")
+			return
+		}
+		slackListener.sendMessage(channels, "regular observation!")
+	}, 10*time.Second)
 }
