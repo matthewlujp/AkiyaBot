@@ -27,6 +27,7 @@ type Conf struct {
 // BotConf config related to bot
 type BotConf struct {
 	BotName                 string
+	BotID                   string
 	ClientID                string
 	BotUserOAuthAccessToken string
 }
@@ -87,6 +88,9 @@ func listenAndResponse(s *slackListener) {
 	for msg := range rtm.IncomingEvents {
 		switch ev := msg.Data.(type) {
 		case *slack.MessageEvent:
+			for _, bot := range rtm.GetInfo().Bots {
+				logger.Printf("bot info %s %s deleted %t", bot.ID, bot.Name, bot.Deleted)
+			}
 			if err := handleMessageEvent(s, rtm, ev); err != nil {
 				logger.Printf("[ERROR] Failed to handle message: %s", err)
 			}

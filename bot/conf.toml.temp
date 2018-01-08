@@ -1,5 +1,6 @@
 [Bot]
 BotName = "akiya-farmer"
+BotID = ""
 ClientID = ""
 BotUserOAuthAccessToken = ""
 

@@ -85,14 +85,15 @@ func watcherRegistration(text, channel string) error {
 	return nil
 }
 
-func handleMessageEvent(s *slackListener, tm *slack.RTM, ev *slack.MessageEvent) error {
+func handleMessageEvent(s *slackListener, rtm *slack.RTM, ev *slack.MessageEvent) error {
 	logger.Printf("MESSAGE EVENT %s:%s \"%s\"", ev.Channel, ev.User, ev.Text)
-	if strings.Contains(ev.Text, "野菜の様子") {
+	if isMentioned(ev.Text, cnf.Bot.BotID) && strings.Contains(ev.Text, "野菜の様子") {
 		s.sendMessage([]string{ev.Channel}, "野菜の写真を撮るよ")
+		rtm.SendMessage(rtm.NewTypingMessage(ev.Channel))
 		if err := takePhotoAndProcess(ev.Channel, s); err != nil {
 			return err
 		}
-	} else if strings.Contains(ev.Text, "定期観察") {
+	} else if isMentioned(ev.Text, cnf.Bot.BotID) && strings.Contains(ev.Text, "定期観察") {
 		if err := watcherRegistration(ev.Text, ev.Channel); err != nil {
 			return err
 		}
