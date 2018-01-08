@@ -13,7 +13,7 @@ type slackListener struct {
 }
 
 var (
-	mentionPattern = regexp.MustCompile("^<@([A-Z0-9])>")
+	mentionPattern = regexp.MustCompile(`^<@([A-Z0-9]+)>`)
 )
 
 func (s *slackListener) sendMessage(channels []string, message string) {
