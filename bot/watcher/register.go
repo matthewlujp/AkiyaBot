@@ -8,8 +8,8 @@ import (
 	"strings"
 )
 
-func (w *Watcher) readChannelsFromFile() ([]string, error) {
-	f, err := os.Open(w.ChannelsFilePath)
+func (wtc *Watcher) readChannelsFromFile() ([]string, error) {
+	f, err := os.Open(wtc.ChannelsFilePath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return []string{}, nil
@@ -28,13 +28,13 @@ func (w *Watcher) readChannelsFromFile() ([]string, error) {
 }
 
 // RegisteredChannels returns channels registered for regular observation
-func (w *Wather) RegisterdChannels() ([]string, error) {
-	return w.readChannelsFromFile()
+func (wtc *Watcher) RegisteredChannels() ([]string, error) {
+	return wtc.readChannelsFromFile()
 }
 
 // RegisterChannel registers new channel
-func (w *Watcher) RegisterChannel(channelID string) error {
-	f, err := os.OpenFile(w.ChannelsFilePath, os.O_APPEND|os.O_WRONLY, 0666)
+func (wtc *Watcher) RegisterChannel(channelID string) error {
+	f, err := os.OpenFile(wtc.ChannelsFilePath, os.O_APPEND|os.O_WRONLY, 0666)
 	if err != nil {
 		logger.Print(err)
 		return err
@@ -50,8 +50,8 @@ func (w *Watcher) RegisterChannel(channelID string) error {
 }
 
 // IsRegistered tells whether a given channel is registered for regular observation
-func (w *Watcher) IsRegistered(channelID string) (bool, error) {
-	registeredChannels, err := w.readChannelsFromFile()
+func (wtc *Watcher) IsRegistered(channelID string) (bool, error) {
+	registeredChannels, err := wtc.readChannelsFromFile()
 	if err != nil {
 		logger.Print(err)
 		return false, err
@@ -65,11 +65,11 @@ func (w *Watcher) IsRegistered(channelID string) (bool, error) {
 }
 
 // DeregistrateChannel remove a given channel from registered channels
-func (w *Watcher) DeregistrateChannel(channelID string) error {
-	registeredChannels, err := w.readChannelsFromFile()
+func (wtc *Watcher) DeregistrateChannel(channelID string) error {
+	registeredChannels, err := wtc.readChannelsFromFile()
 	if err != nil {
 		logger.Print(err)
-		return false, err
+		return err
 	}
 
 	registered := false
@@ -83,7 +83,7 @@ func (w *Watcher) DeregistrateChannel(channelID string) error {
 		return nil
 	}
 
-	f, err := os.OpenFile(w.ChannelsFilePath, os.O_TRUNC|os.O_WRONLY, 0666)
+	f, err := os.OpenFile(wtc.ChannelsFilePath, os.O_TRUNC|os.O_WRONLY, 0666)
 	if err != nil {
 		logger.Print(err)
 		return err
