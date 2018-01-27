@@ -34,6 +34,14 @@ func (wtc *Watcher) RegisteredChannels() ([]string, error) {
 
 // RegisterChannel registers new channel
 func (wtc *Watcher) RegisterChannel(channelID string) error {
+	regisered, err := wtc.IsRegistered(channelID)
+	if err != nil {
+		return err
+	}
+	if regisered {
+		return nil
+	}
+
 	f, err := os.OpenFile(wtc.ChannelsFilePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
 	if err != nil {
 		logger.Printf("register channel open %s, %s", wtc.ChannelsFilePath, err)
@@ -41,7 +49,7 @@ func (wtc *Watcher) RegisterChannel(channelID string) error {
 	}
 	defer f.Close()
 
-	if _, err = f.WriteString(fmt.Sprintf("\n%s", channelID)); err != nil {
+	if _, err = f.WriteString(fmt.Sprintf("%s\n", channelID)); err != nil {
 		logger.Print(err)
 		return err
 	}
@@ -71,6 +79,7 @@ func (wtc *Watcher) DeregisterChannel(channelID string) error {
 		logger.Print(err)
 		return err
 	}
+	logger.Printf("registerd ids: [%s], deregister %s", strings.Join(registeredChannels, ", "), channelID)
 
 	registered := false
 	for _, ch := range registeredChannels {
@@ -93,9 +102,11 @@ func (wtc *Watcher) DeregisterChannel(channelID string) error {
 	w := bufio.NewWriter(f)
 	for _, ch := range registeredChannels {
 		if ch != channelID {
-			_, err = w.WriteString(fmt.Sprintf("%s\n", ch))
-			logger.Print(err)
-			return err
+			logger.Printf("rewrite %s", ch)
+			if _, err = w.WriteString(fmt.Sprintf("%s\n", ch)); err != nil {
+				logger.Print(err)
+				return err
+			}
 		}
 	}
 	w.Flush()
