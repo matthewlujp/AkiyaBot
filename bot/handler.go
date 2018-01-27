@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"os"
 	"strings"
 	"sync"
@@ -18,6 +19,11 @@ func takePhotoAndProcess(channel string, s *slackListener) error {
 	if err != nil {
 		return err
 	}
+	var images string
+	for _, f := range imageFiles {
+		images += fmt.Sprintf(" %s", f.Name)
+	}
+	logger.Printf("images [%s] taken", images)
 
 	if len(imageFiles) <= 0 {
 		s.sendMessage([]string{channel}, "写真が撮れなかったよ")
@@ -29,12 +35,15 @@ func takePhotoAndProcess(channel string, s *slackListener) error {
 	// Attach image files to slack
 	for _, f := range imageFiles {
 		wg.Add(1)
-		go func(imgFile *photoApi.ImageFile) {
-			if err = s.attachData([]string{channel}, imgFile.Name, bytes.NewReader(imgFile.Bytes)); err != nil {
-				logger.Printf("failed to attach %s, %s", imgFile.Name, err)
+		copiedFile := f
+		go func() {
+			if err = s.attachData([]string{channel}, copiedFile.Name, bytes.NewReader(copiedFile.Bytes)); err != nil {
+				logger.Printf("failed to attach %s, %s", copiedFile.Name, err)
+			} else {
+				logger.Printf("%s attached message sent", copiedFile.Name)
 			}
 			wg.Done()
-		}(&f)
+		}()
 	}
 
 	now := time.Now()

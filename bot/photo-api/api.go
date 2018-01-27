@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/matthewlujp/AkiyaBot/photo-server/camera"
 )
@@ -59,7 +60,9 @@ func lookupCameraDeviceName(deviceName string) string {
 
 // GetPhoto returns ReadCloser of retreived image
 func (c *Client) GetPhoto(device string) ([]byte, error) {
-	res, err := http.Get(fmt.Sprintf("%s/img/%s", c.serviceURL, device))
+	req := fmt.Sprintf("%s/img/%s", c.serviceURL, device)
+	logger.Printf("photo request %s", req)
+	res, err := http.Get(req)
 	if err != nil {
 		logger.Printf("photo request to %s, %s", device, err)
 		return nil, err
@@ -84,6 +87,7 @@ func (c *Client) GetAllPhotos() ([]ImageFile, error) {
 	if err != nil {
 		return nil, err
 	}
+	logger.Printf("all cameras %s", strings.Join(cameras, " "))
 
 	images := make([]ImageFile, 0, len(cameras))
 	for _, cam := range cameras {
