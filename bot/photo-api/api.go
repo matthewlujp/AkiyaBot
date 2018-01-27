@@ -69,8 +69,12 @@ func (c *Client) GetPhoto(device string) ([]byte, error) {
 	}
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
-		res.Body.Close()
-		return nil, fmt.Errorf("photo response status: %d", res.StatusCode)
+		var resStr string
+		if buf, readErr := ioutil.ReadAll(res.Body); readErr == nil {
+			resStr = string(buf)
+		}
+		logger.Printf("response to request %s: %s, %s", device, res.Status, resStr)
+		return nil, fmt.Errorf("photo response (status %d) %s", res.StatusCode, resStr)
 	}
 
 	data, err := ioutil.ReadAll(res.Body)
