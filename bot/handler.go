@@ -49,21 +49,25 @@ func takePhotoAndProcess(channel string, s *slackListener) error {
 	now := time.Now()
 
 	// Upload files to google drive
-	for _, f := range imageFiles {
-		wg.Add(1)
-		go func(imgFile *photoApi.ImageFile) {
+	wg.Add(1)
+	go func() {
+		folder := pathFromDateTime(now)
+		for _, f := range imageFiles {
 			err = gService.Upload(&gdrive.UploadFileInfo{
 				Datetime: now,
-				Title:    imgFile.Name,
-				Reader:   bytes.NewReader(imgFile.Bytes),
-				Path:     pathFromDateTime(now),
+				Title:    f.Name,
+				Reader:   bytes.NewReader(f.Bytes),
+				Path:     folder,
 			})
 			if err != nil {
-				logger.Printf("upload %s to google drive, %s", imgFile.Name, err)
+				logger.Printf("upload %s to google drive, %s", f.Name, err)
+			} else {
+				logger.Printf("%s uploaded to google drive", f.Name)
 			}
-			wg.Done()
-		}(&f)
-	}
+			time.Sleep(time.Second * (1/gdrive.QueryPerSecond + 1/gdrive.QueryPerSecond/10))
+		}
+		wg.Done()
+	}()
 
 	// Save on local
 	saveDirPath := saveDirFromTime(now)

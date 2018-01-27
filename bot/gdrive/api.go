@@ -13,6 +13,8 @@ import (
 	"google.golang.org/api/drive/v3"
 )
 
+// QueryPerSecond is a limit of query amount per second
+const QueryPerSecond = 1
 const folderMime = "application/vnd.google-apps.folder"
 
 // UploadFileInfo holds information and reader for a file to be upoaded
