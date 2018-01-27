@@ -17,6 +17,7 @@ import (
 func takePhotoAndProcess(channel string, s *slackListener) error {
 	imageFiles, err := photoClient.GetAllPhotos()
 	if err != nil {
+		s.sendMessage([]string{channel}, fmt.Sprintf("写真が撮れなかったよ, %s", err))
 		return err
 	}
 	var images string
