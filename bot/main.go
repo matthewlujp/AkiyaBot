@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 
@@ -46,6 +47,7 @@ type GDriveAPIConf struct {
 // WatcherConf config related to regular observation
 type WatcherConf struct {
 	ChannelsFilePath string
+	WatchHours       []int
 }
 
 var (
@@ -66,16 +68,17 @@ func init() {
 	photoServiceURL = flag.String("photo_url", cnf.PhotoService.URL, "port number for forwarding")
 	flag.Parse()
 
+	wtc = &watcher.Watcher{
+		ChannelsFilePath: cnf.Watcher.ChannelsFilePath,
+		WatchHour:        cnf.Watcher.WatchHours,
+	}
+	logger.Printf("Hours for regular observation: %v", wtc.WatchHour)
+
 	photoClient = photoApi.GetAPIClient(*photoServiceURL)
 
 	gService, apiErr = gdrive.GetAPIService(cnf.GDriveAPI.ClientSecretPath)
 	if apiErr != nil {
 		logger.Fatalf("failed to obtain gdrive api service %s", apiErr)
-	}
-
-	wtc = &watcher.Watcher{
-		ChannelsFilePath: cnf.Watcher.ChannelsFilePath,
-		WatchHour:        []int{8, 12, 16, 20},
 	}
 }
 

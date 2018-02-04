@@ -13,3 +13,4 @@ ClientSecretPath = ""
 
 [Watcher]
 ChannelsFilePath = ""
+WatchHours = []
